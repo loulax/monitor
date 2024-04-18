@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta http-equiv="refresh" content="20">
+    <title>{{ title }}</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            function updateStatus() {
+                $.ajax({
+                    url: '/',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        for (const [service, status] of Object.entries(data)) {
+                            if (status) {
+                                $('#' + service).html('<p style="color: green;">UP</p>');
+                            } else {
+                                $('#' + service).html('<p style="color: red;">DOWN</p>');
+                            }
+                        }
+                    },
+                    complete: function() {
+                        setTimeout(updateStatus, 10000); // Update every 5 seconds
+                    }
+                });
+            }
+
+            updateStatus();
+        });
+        function afficherDateHeure() {
+            var maintenant = new Date();
+            var joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+            var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+            var jour = maintenant.getDate();
+            var jourSemaine = joursSemaine[maintenant.getDay()];
+            var moisActuel = mois[maintenant.getMonth()];
+            var annee = maintenant.getFullYear();
+
+            var heures = maintenant.getHours();
+            var minutes = maintenant.getMinutes();
+            var secondes = maintenant.getSeconds();
+
+            // Ajoute un zéro devant les chiffres < 10 (pour l'esthétique)
+            heures = (heures < 10) ? '0' + heures : heures;
+            minutes = (minutes < 10) ? '0' + minutes : minutes;
+            secondes = (secondes < 10) ? '0' + secondes : secondes;
+
+            var affichage = jourSemaine + ', ' + jour + ' ' + moisActuel + ' ' + annee + ' ' + heures + ':' + minutes + ':' + secondes;
+
+            document.getElementById('dateHeure').innerHTML = affichage;
+        }
+
+        setInterval(afficherDateHeure, 1000); // Met à jour toutes les secondes
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Météo device <span>{{ device }}</span></h1>
+        <p id="dateHeure"></p>
+        <div class="content">
+            {% for service, status in services.items() %}
+            <div class="col">
+                    <h5>{{ service }}</h5>
+                    <p id="{{ service }}">
+                        {% if status %}<p style='color: green;'>UP</p>
+                        {% else %}<p style='color: red'>DOWN</p>{% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+        </div>
+    </div>
+
+</body>
+</html>
