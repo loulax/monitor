@@ -1,15 +1,10 @@
-html, body{
-
-    margin: 0 auto;
-}
-
 body{
 
     font-family: Arial, Helvetica, sans-serif;
-        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-color: #000;
+    /* background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
     background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
-    height: 100vh;
+    animation: gradient 15s ease infinite; */
 }
 
 @keyframes gradient {
@@ -24,12 +19,6 @@ body{
         }
 }
 
-.container{
-
-    margin-right: 50px;
-    margin-left: 50px;
-    height: 100vh; /* Pour prendre 100% de la hauteur de la vue */
-}
 
 .container > h1{
 
@@ -53,10 +42,9 @@ body{
     justify-content: center;
 }
 
-.col {
+/* .col {
 
     padding: 10px;
-    background-color: #fff;
     text-align: center;
     border-radius: 5px;
     box-shadow: 0px 0px 11px 10px rgba(0,0,0,0.10);
@@ -73,7 +61,7 @@ body{
   box-shadow: 0px 0px 15px 13px rgba(0,0,0,0.08);
     transition: 0.5ms ease-in;
     background-color: rgb(233, 233, 233);
-}
+} */
 
 #dateHeure {
 

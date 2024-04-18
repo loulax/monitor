@@ -1,83 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <meta http-equiv="refresh" content="20">
-    <title>{{ title }}</title>
+
+<!doctype html>
+<html lang="en" class="h-100">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>MONITOR</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            function updateStatus() {
-                $.ajax({
-                    url: '/',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        for (const [service, status] of Object.entries(data)) {
-                            if (status) {
-                                $('#' + service).html('<p style="color: green;">UP</p>');
-                            } else {
-                                $('#' + service).html('<p style="color: red;">DOWN</p>');
-                            }
-                        }
-                    },
-                    complete: function() {
-                        setTimeout(updateStatus, 10000); // Update every 5 seconds
-                    }
-                });
-            }
+          function updateStatus() {
+              $.ajax({
+                  url: '/',
+                  type: 'GET',
+                  dataType: 'json',
+                  success: function(data) {
+                      var servicesHtml = '';
+                      for (const [service, status] of Object.entries(data)) {
+                          var statusColor = status ? 'green' : 'red';
+                          servicesHtml += '<div class="col">';
+                          servicesHtml += '<h5>' + service + '</h5>';
+                          servicesHtml += '<p id="' + service + '"><p style="color: ' + statusColor + ';">' + (status ? 'UP' : 'DOWN') + '</p></p>';
+                          servicesHtml += '</div>';
+                      }
+                      $('.content').html(servicesHtml);
+                  }
+              });
+          }
+  
+          // Appeler la fonction de mise à jour au chargement de la page
+          updateStatus();
+  
+          // Rafraîchir les statuts toutes les 10 secondes
+          setInterval(updateStatus, 10000); // 10 secondes (en millisecondes)
+      });
+  
+          function afficherDateHeure() {
+              var maintenant = new Date();
+              var joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+              var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+  
+              var jour = maintenant.getDate();
+              var jourSemaine = joursSemaine[maintenant.getDay()];
+              var moisActuel = mois[maintenant.getMonth()];
+              var annee = maintenant.getFullYear();
+  
+              var heures = maintenant.getHours();
+              var minutes = maintenant.getMinutes();
+              var secondes = maintenant.getSeconds();
+  
+              // Ajoute un zéro devant les chiffres < 10 (pour l'esthétique)
+              heures = (heures < 10) ? '0' + heures : heures;
+              minutes = (minutes < 10) ? '0' + minutes : minutes;
+              secondes = (secondes < 10) ? '0' + secondes : secondes;
+  
+              var affichage = jourSemaine + ', ' + jour + ' ' + moisActuel + ' ' + annee + ' ' + heures + ':' + minutes + ':' + secondes;
+  
+              document.getElementById('dateHeure').innerHTML = affichage;
+          }
+  
+          setInterval(afficherDateHeure, 1000); // Met à jour toutes les secondes
+  
+      </script>
+  </head>
+  <body class="d-flex flex-column h-100">
 
-            updateStatus();
-        });
-        function afficherDateHeure() {
-            var maintenant = new Date();
-            var joursSemaine = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-            var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-
-            var jour = maintenant.getDate();
-            var jourSemaine = joursSemaine[maintenant.getDay()];
-            var moisActuel = mois[maintenant.getMonth()];
-            var annee = maintenant.getFullYear();
-
-            var heures = maintenant.getHours();
-            var minutes = maintenant.getMinutes();
-            var secondes = maintenant.getSeconds();
-
-            // Ajoute un zéro devant les chiffres < 10 (pour l'esthétique)
-            heures = (heures < 10) ? '0' + heures : heures;
-            minutes = (minutes < 10) ? '0' + minutes : minutes;
-            secondes = (secondes < 10) ? '0' + secondes : secondes;
-
-            var affichage = jourSemaine + ', ' + jour + ' ' + moisActuel + ' ' + annee + ' ' + heures + ':' + minutes + ':' + secondes;
-
-            document.getElementById('dateHeure').innerHTML = affichage;
-        }
-
-        setInterval(afficherDateHeure, 1000); // Met à jour toutes les secondes
-
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>Météo device <span>{{ device }}</span></h1>
-        <p id="dateHeure"></p>
-        <div class="content">
-            {% for service, status in services.items() %}
-            <div class="col">
-                    <h5>{{ service }}</h5>
-                    <p id="{{ service }}">
-                        {% if status %}<p style='color: green;'>UP</p>
-                        {% else %}<p style='color: red'>DOWN</p>{% endif %}
-                    </p>
-                </div>
-                {% endfor %}
-        </div>
+<header>
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Fixed navbar</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/">{{ device }}</a>
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
+</header>
 
-</body>
+<!-- Begin page content -->
+<main class="flex-shrink-0">
+  <div class="container">
+    <h1>Météo device <span>{{ device }}</span></h1>
+        <p id="dateHeure"></p>
+        <div class="row">
+            <div class="card content"></div>
+        </div>
+        <!-- <div class="content"></div> -->
+  </div>
+</main>
+
+
+    </body>
 </html>
