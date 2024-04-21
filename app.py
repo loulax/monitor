@@ -21,7 +21,7 @@ class Monitor:
 
 
     def checkPing(self):
-        result = subprocess.run(["ping", "-c", "3", "-W", "2", self.host], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        result = subprocess.run(["ping", "-c", "2", "-W", "2", self.host], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         if result.returncode == 0:
             return True
@@ -48,6 +48,7 @@ services_to_monitor = {
     "server2": [
         {"name": "ssh", "port": 2222},
         {"name": "apache", "port": 80},
+        {"name": "ping"}
     ],
 }
 
