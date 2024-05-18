@@ -1,148 +1,96 @@
 <!DOCTYPE html>
-<html lang="en" class="h-100">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>MONITOR</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script type="text/javascript">
-$(document).ready(function() {
-    function updateNavbar() {
-        $.ajax({
-            url: '/',
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                let navHtml = '';
-                // Itérer sur les clés du dictionnaire devices
-                Object.keys(data).forEach(function(device) {
-                    navHtml += '<li class="nav-item">';
-                    navHtml += '<a class="nav-link" href="/?device=' + device + '">' + device + '</a>';
-                    navHtml += '</li>';
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" crossorigin="anonymous">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" crossorigin="anonymous">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <title>Document</title>
+        <script>
+            var isFirstLoad = true;
+            function updateContent() {
+                $.ajax({
+                    url: "/",
+                    method: "GET",
+                    success: function(data) {
+                        $(".row").html(data);
+                        isFirstLoad = false;
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Une erreur s'est produite lors de la mise à jour du contenu du tableau :", error);
+                    }
                 });
-                $('.navbar-nav').html(navHtml);
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr, status, error);
-                $('.navbar-nav').html('<li class="nav-item"><span class="nav-link">Erreur lors de la récupération des données</span></li>');
             }
-        });
-    }
-
-    function updateContent(url) {
-    $.ajax({
-        url: url,
-        type: 'GET',
-        dataType: 'json',
-        success: function(data) {
-            if (!url || url === '/') {
-                $('.content').html('<h1>Contenu statique pour la page d\'accueil</h1>');
-            } else {
-                if (data.length > 1) {
-                    const device = data[0];
-                    const deviceData = data[1];
-                    let deviceHtml = '<div class="device">';
-                    deviceHtml += '<div class="services">';
-                        Object.keys(deviceData).forEach(function(service) {
-                        deviceHtml += "<div class='col-lg-12'>";
-                        deviceHtml += "<div class='card'>";
-                        const status = deviceData[service];
-                        let statusClass = status ? "up" : "down";
-                        deviceHtml += '<div class="service '+ statusClass +'">';
-                        deviceHtml += '<h2 class="card-title"><strong>' + service + '</strong></h2>';
-                        deviceHtml += '</div>';
-                        deviceHtml += '</div>';
-                        deviceHtml += "</div>";
-                    });
-                    deviceHtml += '</div>';
-                    deviceHtml += '</div>';
-
-                    $('.row').html(deviceHtml);
-                    $('.hostname').html(device);
-                } else {
-                    $('.content').html('<h1>Aucun appareil spécifié ou données indisponibles</h1>');
-                }
+            $(document).ready(function() {
+                setInterval(updateContent, 1000);
+            });
+            function afficherDateHeure() {
+                const now = new Date();
+                const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const optionsHeure = { hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                
+                const dateFr = now.toLocaleDateString('fr-FR', optionsDate);
+                const timeFr = now.toLocaleTimeString('fr-FR', optionsHeure);
+                
+                $('#dateHeure').text(dateFr + ' ' + timeFr);
             }
-        },
-        error: function(xhr, status, error) {
-            console.error(xhr, status, error);
-            $('.content').html('<h1>Erreur lors de la récupération des données</h1>');
-        }
-    });
-}
+            
+            $("#title").html("Météo");
 
-    // Fonction pour récupérer un paramètre de l'URL
-    function getParameterByName(name, url) {
-        if (!url) url = window.location.href;
-        name = name.replace(/[\[\]]/g, '\\$&');
-        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
-    }
+            // Mettre à jour la date et l'heure périodiquement
+            setInterval(afficherDateHeure, 1000);
 
-    // Mettre à jour la barre de navigation au chargement de la page et périodiquement
-    updateNavbar();
-    setInterval(updateNavbar, 10000);
+            
+        </script>
+    </head>
+    <body class="d-flex flex-column h-100">
+        <main class="flex-shrink-0 mt-5">
+            <div class="container">
+                <div id="dateHeure"></div>
+                <div class="row">
 
-    // Mettre à jour le contenu en fonction de l'URL actuelle au chargement de la page
-    updateContent(window.location.href);
+                    {% for device in devices %}
+                    <div class="col-md-6">
+                        <div class="card">
+                            <h2 class="card-title text-center">{{ device["hostname"] }}</h2>
 
-    $('.navbar-nav').on('click', 'a', function(e) {
-        e.preventDefault();
-        const deviceName = $(this).text();
-        const url = '/?device=' + encodeURIComponent(deviceName);
-        updateContent(url);
-        window.history.pushState({}, '', url);
-    });
-
-    // Mettre à jour le contenu périodiquement avec l'URL actuelle
-    setInterval(function() {
-        updateContent(window.location.href);
-    }, 10000);
-
-    // Afficher la date et l'heure actuelles
-    function afficherDateHeure() {
-        const now = new Date();
-        now.toLocaleDateString("fr");
-        $('#dateHeure').text(now);
-    }
-
-    // Mettre à jour la date et l'heure périodiquement
-    setInterval(afficherDateHeure, 1000);
-});
-    </script>
-</head>
-<body class="d-flex flex-column h-100">
-    <header>
-      <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#">Monitor</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav me-auto mb-2 mb-md-0">
-              <!-- Afficher chaque device dans la barre de navigation -->
-              
-            </ul>
-          </div>
-        </div>
-      </nav>
-    </header>
-    <main class="flex-shrink-0 mt-5">
-      <div class="container">
-        <div id="dateHeure"></div>
-        <hr>
-        <h1 class="welcome">{{ welcome }}</h1>
-        <h1>Météo <span class="hostname"></span></h1>
-        <div class="row"></div>
-      </div>
-    </main>
-</body>
+                            <div class="card-body">
+                                <p>Local IP : {{ device["Local IP"] }}</p>
+                                <p>Public IP : {{ device["Public IP"] }}</p>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Nom</th>
+                                                <th scope="col">Port</th>
+                                                <th scope="col">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="content">
+                                            {% for service_name in device["services"] %}
+                                            <tr>
+                                                <td>{{ service_name }}</td>
+                                                <td>{{ device["services"][service_name]["port"] }}</td>
+                                                <td>
+                                                    {% if device["services"][service_name]["status"] == "up" %}
+                                                        <span class="badge bg-success">Actif</span>
+                                                    {% else %}
+                                                        <span class="badge bg-danger">Inactif</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </body>    
 </html>
