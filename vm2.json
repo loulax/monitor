@@ -1,0 +1,13 @@
+{
+    "hostname": "hostname",
+    "services": {
+        "ssh": {
+            "port": 1234,
+            "status": "up"
+        },
+        "x": {
+            "port": 61761,
+            "status": "up"
+        }
+    }
+}

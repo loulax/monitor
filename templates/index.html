@@ -1,96 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" crossorigin="anonymous">
-        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" crossorigin="anonymous">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <title>Document</title>
-        <script>
-            var isFirstLoad = true;
-            function updateContent() {
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet" crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Device Status</title>
+    <script>
+        $(document).ready(function() {
+            function fetchStatus() {
                 $.ajax({
-                    url: "/",
-                    method: "GET",
+                    url: '/api/devices',
+                    method: 'GET',
                     success: function(data) {
-                        $(".row").html(data);
-                        isFirstLoad = false;
+                        updateStatus(data.devices, data.ping_times);
                     },
-                    error: function(xhr, status, error) {
-                        console.error("Une erreur s'est produite lors de la mise à jour du contenu du tableau :", error);
+                    error: function() {
+                        console.error("Failed to fetch device status");
                     }
                 });
             }
-            $(document).ready(function() {
-                setInterval(updateContent, 1000);
-            });
+
+            function updateStatus(devices, pingTimes) {
+                $('#device-container').empty();
+
+                // Update device status
+                for (const [hostname, device] of Object.entries(devices)) {
+                    let deviceCard = $(`
+                        <div class="col-md-6" id="${hostname}">
+                            <div class="card mb-4">
+                                <h2 class="card-title mt-3 text-center">${device.hostname}</h2>
+                                <div class="card-body">
+                                    <p>Local IP : ${device["Local IP"]}</p>
+                                    <p>Public IP : ${device["Public IP"]} [ <span id="ping-${hostname}" class="ping">${pingTimes[hostname] || 'Loading...'} ms</span> ]</p>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Service</th>
+                                                    <th scope="col">Port</th>
+                                                    <th scope="col">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="content"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    
+                    let servicesBody = deviceCard.find(".content");
+                    for (const [serviceName, service] of Object.entries(device.services)) {
+                        servicesBody.append(`
+                            <tr>
+                                <td>${serviceName}</td>
+                                <td>${service.port}</td>
+                                <td>
+                                    <span class="${serviceName}-status badge ${service.status === 'up' ? 'bg-success' : 'bg-danger'}">
+                                        ${service.status === 'up' ? 'Actif' : 'Inactif'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `);
+                    }
+                    
+                    $('#device-container').append(deviceCard);
+                }
+            }
+
             function afficherDateHeure() {
                 const now = new Date();
                 const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 const optionsHeure = { hour: 'numeric', minute: 'numeric', second: 'numeric' };
-                
                 const dateFr = now.toLocaleDateString('fr-FR', optionsDate);
                 const timeFr = now.toLocaleTimeString('fr-FR', optionsHeure);
-                
                 $('#dateHeure').text(dateFr + ' ' + timeFr);
             }
-            
-            $("#title").html("Météo");
 
-            // Mettre à jour la date et l'heure périodiquement
+            // Initial fetch
+            fetchStatus();
+
+            // Fetch status every 10 seconds
+            setInterval(fetchStatus, 1000);
+
+            // Show datetime every second
             setInterval(afficherDateHeure, 1000);
-
-            
-        </script>
-    </head>
-    <body class="d-flex flex-column h-100">
-        <main class="flex-shrink-0 mt-5">
-            <div class="container">
-                <div id="dateHeure"></div>
-                <div class="row">
-
-                    {% for device in devices %}
-                    <div class="col-md-6">
-                        <div class="card">
-                            <h2 class="card-title text-center">{{ device["hostname"] }}</h2>
-
-                            <div class="card-body">
-                                <p>Local IP : {{ device["Local IP"] }}</p>
-                                <p>Public IP : {{ device["Public IP"] }}</p>
-                                <div class="table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Nom</th>
-                                                <th scope="col">Port</th>
-                                                <th scope="col">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="content">
-                                            {% for service_name in device["services"] %}
-                                            <tr>
-                                                <td>{{ service_name }}</td>
-                                                <td>{{ device["services"][service_name]["port"] }}</td>
-                                                <td>
-                                                    {% if device["services"][service_name]["status"] == "up" %}
-                                                        <span class="badge bg-success">Actif</span>
-                                                    {% else %}
-                                                        <span class="badge bg-danger">Inactif</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </main>
-    </body>    
+        });
+    </script>
+</head>
+<body class="d-flex flex-column h-100">
+    <main class="flex-shrink-0 mt-5">
+        <div class="container">
+            <div id="dateHeure" class="mb-3"></div>
+            <h1>Meteo</h1>
+            <hr style="background-color: red;">
+            <div class="row" id="device-container"></div>
+        </div>
+    </main>
+</body>
 </html>
